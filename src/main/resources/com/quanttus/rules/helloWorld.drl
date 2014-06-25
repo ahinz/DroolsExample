@@ -1,0 +1,57 @@
+import com.quanttus.rules.*;
+
+global Notifier notifier;
+
+rule "Calories Burned"
+when
+    user: User(today().hoursOfData >= 14,
+               validToday == false)
+then
+    modify(user) { setValidToday(true) };
+    notifier.message(user, "CaloriesBurned");
+end
+
+rule "Calorie Goal Male"
+when
+    user: User(hitCalorieGoal == false,
+               validToday == true,
+               isMale() == true,
+               today().calories >= 13.75 * weight + 5.0 * height - 6.76 * age + 660)
+then
+    modify(user) { setHitCalorieGoal(true) };
+    user.setHitCalorieGoal(true);
+    notifier.message(user, "CalorieGoal");
+end
+
+rule "Calorie Goal Woman"
+when
+    user: User(hitCalorieGoal == false,
+               validToday == true,
+               isMale() == false,
+               today().calories >= 9.56 * weight + 1.85 * height - 4.68 * age + 655)
+then
+    modify(user) { setHitCalorieGoal(true) };
+    notifier.message(user, "CalorieGoal");
+end
+
+rule "Local Max Cal"
+when
+    $user: User(hitCalorieGoal == true)
+    $today: DailyDataPoint() from $user.today()
+
+    accumulate($data1: DailyDataPoint() from $user.dataFrom(7);
+               $countAll : count($data1))
+
+    accumulate($data2: DailyDataPoint(hoursOfData >= 16,
+                                      hoursOfData >= $today.hoursOfData) from $user.dataFrom(7);
+               $countValid : count($data2);
+               $countValid >= $countAll / 2)
+
+    accumulate($data3: DailyDataPoint($calories: calories) from $user.dataFrom(7);
+               $max : max($calories),
+               $countDataPoints : count($data3);
+               $countDataPoints >= 0)
+
+then
+    notifier.message($user, "LocalMax | " + $countValid);
+end
