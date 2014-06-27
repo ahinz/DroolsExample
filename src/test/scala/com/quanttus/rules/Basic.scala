@@ -49,8 +49,8 @@ class RulesSpec extends FlatSpec with Matchers with DroolsInit {
 
     session.insert(user)
 
-    val numberOfUsers = 16
-    for(i <- 0 until numberOfUsers) {
+    val numberOfDataPoints = 16
+    for(i <- 0 until numberOfDataPoints) {
       session.insert(DailyDataPoint(user, cals().toInt, hours(), i))
     }
 
@@ -65,8 +65,8 @@ class RulesSpec extends FlatSpec with Matchers with DroolsInit {
 
     session.insert(Now(10))
 
-    // 6000 users?
-    for(i <- 0 until 5) {
+    val numberOfUsers = 100
+    for(i <- 0 until numberOfUsers) {
       insertUserAndFacts(session)
     }
 
